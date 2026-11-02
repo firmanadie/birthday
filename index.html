@@ -23,7 +23,7 @@ section{padding:88px 0}.head{text-align:center;margin-bottom:36px}.head h2{font-
 </head>
 <body>
 <button class="music" id="musicBtn" type="button">♫ Play our song</button>
-<audio id="song" src="assets/our-song.mp3" loop preload="none"></audio>
+<audio id="song" src="assets/our-song.mp3" loop preload="auto"></audio>
 
 <header class="hero">
  <div class="hero-inner wrap">
@@ -93,8 +93,60 @@ function tick(){const el=document.getElementById('countdown'),diff=target-new Da
 tick();setInterval(tick,60000);
 document.getElementById('secretBtn').addEventListener('click',()=>{document.getElementById('secret').style.display='block';document.getElementById('secretBtn').textContent='♡';});
 const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.12});document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
-const audio=document.getElementById('song'),musicBtn=document.getElementById('musicBtn');
-musicBtn.addEventListener('click',async()=>{if(audio.paused){try{await audio.play();musicBtn.textContent='Ⅱ Pause our song';}catch(e){musicBtn.textContent='Add our-song.mp3 first';}}else{audio.pause();musicBtn.textContent='♫ Play our song';}});
-audio.addEventListener('ended',()=>{musicBtn.textContent='♫ Play our song';});
+const audio = document.getElementById('song');
+const musicBtn = document.getElementById('musicBtn');
+
+// Memperbarui tulisan tombol
+function updateMusicButton() {
+    musicBtn.textContent = audio.paused
+        ? '♫ Play our song'
+        : 'Ⅱ Pause our song';
+}
+
+// Coba putar otomatis ketika website dibuka
+async function startMusic() {
+    try {
+        await audio.play();
+        updateMusicButton();
+    } catch (error) {
+        console.log('Autoplay diblokir browser. Menunggu interaksi.');
+    }
+}
+
+// Tombol Play dan Pause
+musicBtn.addEventListener('click', async () => {
+    if (audio.paused) {
+        try {
+            await audio.play();
+            updateMusicButton();
+        } catch (error) {
+            musicBtn.textContent = '♫ Music unavailable';
+        }
+    } else {
+        audio.pause();
+        updateMusicButton();
+    }
+});
+
+// Jika browser memblokir autoplay,
+// coba putar setelah pengunjung berinteraksi
+document.addEventListener('click', async function () {
+    if (audio.paused) {
+        try {
+            await audio.play();
+            updateMusicButton();
+        } catch (error) {
+            console.log('Musik belum bisa diputar.');
+        }
+    }
+}, { once: true });
+
+// Pastikan tombol selalu mengikuti kondisi lagu
+audio.addEventListener('play', updateMusicButton);
+audio.addEventListener('pause', updateMusicButton);
+audio.addEventListener('ended', updateMusicButton);
+
+// Jalankan percobaan autoplay
+startMusic();
 </script>
 </body></html>
